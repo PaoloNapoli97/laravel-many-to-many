@@ -13,8 +13,11 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::table('projects', function (Blueprint $table) {
-            $table->foreignId('type_id')->nullable()->constrained()->onDelete('set null');
+        Schema::create('technologies', function (Blueprint $table) {
+            $table->id();
+            $table->string('typology');
+            $table->string('slug');
+            $table->timestamps();
         });
     }
 
@@ -25,9 +28,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::table('projects', function (Blueprint $table) {
-            $table->dropForeign(['type_id']);
-            $table->dropColumn('type_id');
-        });
+        Schema::dropIfExists('technologies');
     }
 };
