@@ -31,7 +31,22 @@
             </div>
             <input type="file" class="form-control" id="cover_image" name="cover_image" onchange="loadFile(event)">
         </div>
-        <button class="btn btn-primary">Modifica</button>
+        <div class="mb-2">
+            @foreach ($technologies as $technology)
+                
+            <div class="form-check form-check-inline">
+
+                @if ( $errors->any() )                    
+                    <input class="form-check-input" type="checkbox" id="{{ $technology->slug}}" name="technology[]" value="{{ $technology->id}}" {{ in_array($technology->id, old('technologies', [] )) ? 'checked' : ''}}>
+                @else
+                    <input class="form-check-input" type="checkbox" id="{{ $technology->slug}}" name="technology[]" value="{{ $technology->id}}" {{ $project->technologies->contains($technology->id) ? 'checked' : ''}}>
+                @endif
+                    <label class="form-check-label" for="{{ $technology->slug}}">{{ $technology->typology}}</label>
+            </div>
+
+            @endforeach
+        </div>
+        <button type="submit" class="btn btn-primary">Modifica</button>
         @if ($errors->any())
         <div class="alert alert-danger">
             <ul>

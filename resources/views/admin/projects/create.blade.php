@@ -35,11 +35,21 @@
             <select class="form-select" name="type_id" id="type_id">
                 <option value="">Nessuna Tipologia</option>
                 @foreach ($types as $type)
-                    <option value="{{ $type->id }}" {{old('type_id') == type->id ? 'selected' : ''}}>{{$type->develop}}</option>
+                    <option value="{{ $type->id }}" {{old('type_id') == $type->id ? 'selected' : ''}}>{{$type->develop}}</option>
                 @endforeach
             </select>
         </div>
-        <button class="btn btn-primary">Crea Progetto</button>
+        <div class="mb-2">
+            @foreach ($technologies as $technology)
+                
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="checkbox" id="{{ $technology->slug}}" name="technology[]" value="{{ $technology->id}}">
+                <label class="form-check-label" for="{{ $technology->slug}}">{{ $technology->typology}}</label>
+            </div>
+
+            @endforeach
+        </div>
+            <button type="submit" class="btn btn-primary">Crea Progetto</button>
         @if ($errors->any())
         <div class="alert alert-danger">
             <ul>

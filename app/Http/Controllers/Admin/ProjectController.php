@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Project;
 use App\Http\Requests\StoreProjectRequest;
 use App\Http\Requests\UpdateProjectRequest;
+use App\Models\Technology;
 use App\Models\Type;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpKernel\Event\ViewEvent;
@@ -34,8 +35,9 @@ class ProjectController extends Controller
     public function create()
     {
         $types = Type::all();
+        $technologies = Technology::all();
 
-        return view('admin.projects.create', compact('types'));
+        return view('admin.projects.create', compact('types', 'technologies'));
     }
 
     /**
@@ -49,19 +51,23 @@ class ProjectController extends Controller
         $data = $request->validated();
 
 
-
-        $new_project = new Project();
-        $new_project->fill($data);
-        $new_project->slug = Str::slug($new_project->title);
-
+        
         if ( isset($data['cover_image']) ) { 
             $data['cover_image'] = Storage::disk('public')->put('uploads', $data['cover_image']);
             // $new_project->cover_image = $img_path;
             //or
             //$new_project->cover_image = Storage::disk('public')->put('uploads', $data['cover_image']);
         }
+        
 
+        $new_project = new Project();
+        $new_project->fill($data);
+        $new_project->slug = Str::slug($new_project->title);
         $new_project->save();
+
+        if ( isset($data['technologies'])) {
+            $new_project->technologies()->sync($data['technologies']);
+        }
 
         return redirect()->route('admin.projects.index')->with('message', 'Progetto aggiunto');
     }
@@ -88,7 +94,10 @@ class ProjectController extends Controller
      */
     public function edit(Project $project)
     {
-        return view('admin.projects.edit', compact('project'));
+        $types = Type::all();
+        $technologies = Technology::all();
+
+        return view('admin.projects.edit', compact('project', 'types', 'technologies' ));
     }
 
     /**
@@ -108,14 +117,28 @@ class ProjectController extends Controller
         $project->slug = Str::slug($data['title']);
 
         
-        if ( $data['cover_image'] ) { 
-            // $img_path = Storage::disk('public')->put('uploads', $data['cover_image']);
-            // $new_project->cover_image = $img_path;
-            //or
-            $project->cover_image = Storage::disk('public')->put('uploads', $data['cover_image']);
+        // if ( $data['cover_image'] ) { 
+        //     // $img_path = Storage::disk('public')->put('uploads', $data['cover_image']);
+        //     // $new_project->cover_image = $img_path;
+        //     //or
+        //     $project->cover_image = Storage::disk('public')->put('uploads', $data['cover_image']);
+        // }
+        if ( isset($data['cover_image']) ) {
+            if( $project->cover_image ) {
+                Storage::delete($project->cover_image);
+            }
+            $data['cover_image'] = Storage::put('uploads', $data['cover_image']);
         }
 
+        if( isset($data['no_image']) && $project->cover_image  ) {
+            Storage::delete($project->cover_image);
+            $project->cover_image = null;
+        }
+
+
         $project->update($data);
+        $technologies = isset($data['technologies']) ? $data['technologies'] : [];
+        $project->technologies()->sync($technologies);
 
         return redirect()->route('admin.projects.index')->with('message', 'Il progetto è stato aggiornato');
     }
